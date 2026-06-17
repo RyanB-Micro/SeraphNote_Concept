@@ -29,6 +29,9 @@ draggable_node = None
 build_line = False
 initial_corner = None
 terminate_corner = None
+changeable_bond = None
+
+
 
 def create_node():
     global nodes
@@ -64,19 +67,22 @@ def draw_nodes():
 
 
 def draw_bonds():
-    for bond in bond_list:
+    for num, bond in enumerate(bond_list):
         bond.update_position()
 
         # Draw bond line
         pygame.draw.line(screen, SKY_AZURE, (bond.x, bond.y), (bond.term_x, bond.term_y), 2)
 
         # Draw id box
-        id_box = pygame.Rect(0, 0, 35, 15)
-        id_box.center = (
-            ((bond.x + bond.term_x) / 2),
-            ((bond.y + bond.term_y) / 2)
-        )
-        pygame.draw.rect(screen, BACK_AZURE, id_box)
+        # id_box = pygame.Rect(0, 0, 35, 15)
+        # id_box.center = (
+        #     ((bond.x + bond.term_x) / 2),
+        #     ((bond.y + bond.term_y) / 2)
+        # )
+        if num == changeable_bond:
+            pygame.draw.rect(screen, LINE_MAKE, bond.id_box)
+        else:
+            pygame.draw.rect(screen, BACK_AZURE, bond.id_box)
 
         # Draw id
         id_text = font_small.render(bond.id, True, (0, 0, 0))
@@ -141,7 +147,8 @@ def bond_builder(original_corner, end_corner, mouse_x, mouse_y):
 
 
 def screen_loop():
-    global clock, font, screen, pygame_running, draggable_node, build_line, initial_corner, terminate_corner
+    global clock, font, screen, pygame_running, draggable_node, build_line,\
+        initial_corner, terminate_corner, changeable_bond
 
     create_node()
 
@@ -182,6 +189,12 @@ def screen_loop():
                                     build_line = False
                                     terminate_corner = (node, i)
 
+                    # check if over bond
+                    for num, bond in enumerate(bond_list):
+                        if bond.id_box.collidepoint(event.pos):
+                            changeable_bond = num
+
+
 
 
             # move active node
@@ -210,6 +223,7 @@ def screen_loop():
 
     # Quit pygame on main loop finish
     pygame.quit()
+
 
 
 if __name__ == '__main__':

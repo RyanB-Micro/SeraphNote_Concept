@@ -13,6 +13,10 @@ stop_event = threading.Event()
 screen_thread = None
 
 
+bond_window = Tk()
+label_entry = None
+
+
 def start_screen():
     global screen_thread
     stop_event.clear()
@@ -35,9 +39,75 @@ def screen_loop():
         stop_screen()
 
 
+def change_bond_text(entry):
+    if screen_ut.changeable_bond is None:
+        return
+
+    text = label_entry.get()
+    screen_ut.bond_list[screen_ut.changeable_bond].text = text
+    screen_ut.changeable_bond = None
+    bond_window.withdraw()
+
+
+def create_bond_control():
+    global label_entry
+    bond_num = screen_ut.changeable_bond
+    bond_window.geometry("200x300")
+    bond_window.protocol("WM_DELETE_WINDOW", bond_window.withdraw)
+    bond_window.title("Bond Control")
+
+    title_label = Label(bond_window, text="Bond Control Settings")
+    title_label.pack()
+
+
+    label_entry = Entry()
+
+    #label_entry.insert(0, screen_ut.bond_list[bond_num].id)
+
+    label_entry.pack()
+
+    start_sim_button = Button(bond_window, text="Update Label")
+    start_sim_button.config(command=lambda: change_bond_text(label_entry))
+    start_sim_button.place(x=50, y=50)
+
+    # kill_sim_button = Button(bond_window, text="Kill Sim")
+    # #kill_sim_button.config(command=kill_simulator)
+    # kill_sim_button.place(x=120, y=30)
+    #
+    # plot_test_button = Button(bond_window, text="Test Pyplot")
+    # #plot_test_button.config(command=plotter.disp_test_plot)
+    # plot_test_button.place(x=50, y=100)
+
+    #bond_window.mainloop()
+    #bond_window.after(100, tk_bond_control)
+
+
+def detect_bond_selection():
+    global label_entry
+    if screen_ut.pygame_running and (screen_ut.changeable_bond is not None):
+        if bond_window.state() == "withdrawn":
+            label_entry.delete(0, END)
+            label_entry.insert(0, screen_ut.bond_list[screen_ut.changeable_bond].text)
+            bond_window.deiconify()
+    # recheck window after delay
+    bond_window.after(100, detect_bond_selection)
+
+
 def main():
     print ("Program Running")
     start_screen()
+    create_bond_control()
+    bond_window.withdraw()
+    detect_bond_selection()
+    bond_window.mainloop()
+
+    # bond_window.withdraw()
+    # while True:
+    #
+    #     if screen_ut.pygame_running:
+    #         if screen_ut.changeable_bond:
+    #             bond_window.deiconify()
+
 
 
 

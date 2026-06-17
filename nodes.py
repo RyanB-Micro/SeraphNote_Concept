@@ -49,12 +49,17 @@ class Bond:
         self.term_y = 0
         self.id = gen_bond_id()
         self.text = "X is a Y"
+        self.id_box = pygame.Rect(0, 0, 35, 15)
 
     def update_position(self):
         self.x = self.node_1.corners[self.corner_1][0]
         self.y = self.node_1.corners[self.corner_1][1]
         self.term_x = self.node_2.corners[self.corner_2][0]
         self.term_y = self.node_2.corners[self.corner_2][1]
+        self.id_box.center = (
+            ((self.x + self.term_x) / 2),
+            ((self.y + self.term_y) / 2)
+        )
 
     def set_text(self, text):
         self.text = text
