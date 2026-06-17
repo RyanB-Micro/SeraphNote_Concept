@@ -2,9 +2,13 @@ import pygame
 import random
 
 node_ids = []
+bond_ids = []
+
+# TODO: add bond slots to nodes
+# TODO: Add bond table to pandas, nodes x nodes and bonds within
 
 
-def gen_id():
+def gen_node_id():
     global node_ids
     node_id = "N_0"
     while node_id == "N_0":
@@ -18,6 +22,20 @@ def gen_id():
     return node_id
 
 
+def gen_bond_id():
+    global bond_ids
+    bond_id = "B_0"
+    while bond_id == "B_0":
+        id = random.randint(0,255)
+        builder = "B_" + str(id)
+        # make sure it doesnt already exist
+        if builder not in node_ids:
+            bond_id = builder
+            bond_ids.append(bond_id)
+
+    return bond_id
+
+
 
 class Bond:
     def __init__(self, node_1, node_2, corner_1, corner_2):
@@ -29,12 +47,17 @@ class Bond:
         self.y = 0
         self.term_x = 0
         self.term_y = 0
+        self.id = gen_bond_id()
+        self.text = "X is a Y"
 
     def update_position(self):
         self.x = self.node_1.corners[self.corner_1][0]
         self.y = self.node_1.corners[self.corner_1][1]
         self.term_x = self.node_2.corners[self.corner_2][0]
         self.term_y = self.node_2.corners[self.corner_2][1]
+
+    def set_text(self, text):
+        self.text = text
 
 
 
@@ -49,12 +72,14 @@ class Node:
         self.height = 50
         self.bonds = []
         self.box = pygame.Rect(self.x, self.y, self.width, self.height)
-        self.id = gen_id()
+        self.id = gen_node_id()
 
         self.corners = [(self.x,self.y), (self.x+self.width,self.y), (self.x, self.y+(self.height/2)),
                         (self.x+self.width, self.y+(self.height/2)), (self.x, self.y+self.height), (self.x+self.width, self.y+self.height)]
 
         self.active = False
+
+        self.bonds = [None, None, None, None, None, None]
 
 
     def set_position(self, x, y):

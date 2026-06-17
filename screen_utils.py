@@ -62,6 +62,44 @@ def draw_nodes():
             pygame.draw.circle(screen, DARK_AZURE, corner, 5)
 
 
+
+def draw_bonds():
+    for bond in bond_list:
+        bond.update_position()
+
+        # Draw bond line
+        pygame.draw.line(screen, SKY_AZURE, (bond.x, bond.y), (bond.term_x, bond.term_y), 2)
+
+        # Draw id box
+        id_box = pygame.Rect(0, 0, 35, 15)
+        id_box.center = (
+            ((bond.x + bond.term_x) / 2),
+            ((bond.y + bond.term_y) / 2)
+        )
+        pygame.draw.rect(screen, BACK_AZURE, id_box)
+
+        # Draw id
+        id_text = font_small.render(bond.id, True, (0, 0, 0))
+        id_rect = id_text.get_rect()
+        id_rect.center = (
+            ((bond.x + bond.term_x) / 2),
+            ((bond.y + bond.term_y) / 2)
+        )
+        screen.blit(id_text, id_rect)
+
+        # Draw text
+        label_text = font.render(bond.text, True, (255-7, 255-7, 255-7))
+        label_rect = label_text.get_rect()
+        label_rect.center = (
+            ((bond.x + bond.term_x) / 2),
+            ((bond.y + bond.term_y) / 2) - 20
+        )
+        screen.blit(label_text, label_rect)
+
+
+
+
+
 def init_screen(WIDTH, HEIGHT):
     global clock, font, font_small, screen, pygame_running
     pygame.init()
@@ -98,12 +136,6 @@ def bond_builder(original_corner, end_corner, mouse_x, mouse_y):
 
     bond = nodes.Bond(node_1, node_2, corner_1_num, corner_2_num)
     bond_list.append(bond)
-
-
-def draw_bonds():
-    for bond in bond_list:
-        bond.update_position()
-        pygame.draw.line(screen, SKY_AZURE, (bond.x, bond.y), (bond.term_x, bond.term_y), 2)
 
 
 
