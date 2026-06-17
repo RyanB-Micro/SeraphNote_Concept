@@ -62,24 +62,11 @@ def create_bond_control():
 
     label_entry = Entry()
 
-    #label_entry.insert(0, screen_ut.bond_list[bond_num].id)
-
     label_entry.pack()
 
     start_sim_button = Button(bond_window, text="Update Label")
     start_sim_button.config(command=lambda: change_bond_text(label_entry))
     start_sim_button.place(x=50, y=50)
-
-    # kill_sim_button = Button(bond_window, text="Kill Sim")
-    # #kill_sim_button.config(command=kill_simulator)
-    # kill_sim_button.place(x=120, y=30)
-    #
-    # plot_test_button = Button(bond_window, text="Test Pyplot")
-    # #plot_test_button.config(command=plotter.disp_test_plot)
-    # plot_test_button.place(x=50, y=100)
-
-    #bond_window.mainloop()
-    #bond_window.after(100, tk_bond_control)
 
 
 def detect_bond_selection():
