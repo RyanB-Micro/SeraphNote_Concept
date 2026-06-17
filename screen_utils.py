@@ -29,22 +29,34 @@ draggable_node = None
 build_line = False
 initial_corner = None
 terminate_corner = None
+changeable_node = None
 changeable_bond = None
+
 
 
 
 def create_node():
     global nodes
     node_list.append(nodes.Node(20, 20, SERAPH, "Test 1"))
-    node_list.append(nodes.Node(80, 80, SERAPH, "Test 1"))
+    node_list.append(nodes.Node(80, 80, SERAPH, "Test 2"))
+    node_list.append(nodes.Node(100, 220, SERAPH, "Test 3"))
+    node_list.append(nodes.Node(280, 200, SERAPH, "Test 4"))
 
+
+# def draw_tool_box():
+#     tool_box = pygame.Rect(0, 0, 35, 15)
 
 def draw_nodes():
     global node_list
 
-    for node in node_list:
+    for num, node in enumerate(node_list):
         #pygame.draw.rect(screen, node.colour, (node.x, node.y, node.width, node.height))
-        pygame.draw.rect(screen, node.colour, node.box)
+
+        if num == changeable_node:
+            pygame.draw.rect(screen, DARK_GREY, node.box)
+        else:
+            pygame.draw.rect(screen, node.colour, node.box)
+
         label_text = font.render(node.text, True, (255, 255, 255))
         label_rect = label_text.get_rect()
         label_rect.center = (
@@ -148,7 +160,7 @@ def bond_builder(original_corner, end_corner, mouse_x, mouse_y):
 
 def screen_loop():
     global clock, font, screen, pygame_running, draggable_node, build_line,\
-        initial_corner, terminate_corner, changeable_bond
+        initial_corner, terminate_corner, changeable_node, changeable_bond
 
     create_node()
 
@@ -177,7 +189,7 @@ def screen_loop():
                     for num, node in enumerate(node_list):
                         # check if box selected
                         if node.box.collidepoint(event.pos):
-                            draggable_node = node
+                            changeable_node = num
                         # check if circle selected
                         for i, corner in enumerate(node.corners):
                             # if within radius of the circle
@@ -193,6 +205,13 @@ def screen_loop():
                     for num, bond in enumerate(bond_list):
                         if bond.id_box.collidepoint(event.pos):
                             changeable_bond = num
+
+                if event.button == 3: # right mouse button
+                    # check if mouse over box
+                    for num, node in enumerate(node_list):
+                        # check if box selected
+                        if node.box.collidepoint(event.pos):
+                            draggable_node = node
 
 
 
@@ -211,7 +230,7 @@ def screen_loop():
 
             # if mouse up, drop active box
             if event.type == pygame.MOUSEBUTTONUP:
-                if event.button == 1:  # left mouse button
+                if event.button == 3:  # right mouse button
                     draggable_node = None
 
 
