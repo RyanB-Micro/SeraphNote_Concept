@@ -24,7 +24,7 @@ bond_label_entry = None
 fact_label_entry = None
 fact_body_entry = None
 
-main_title_label = None
+project_name = "SeraphNote__New_File__.pk1"
 
 
 def start_screen():
@@ -63,13 +63,13 @@ def screen_loop():
 
 
 def change_title_text():
-    global main_title_label
+    global project_name
     new_title = title_label_entry.get().strip()
     if not new_title:
-        new_title = "SeraphNote__New_File__"
+        new_title = "__New_File__"
 
-    main_title_label = "SeraphNote_" + new_title
-    screen_ut.window_title = main_title_label
+    project_name = "SeraphNote_" + new_title + ".pk1"
+    screen_ut.window_title = project_name
 
 
 def change_node_text():
@@ -158,6 +158,23 @@ def cancel_fact_edit():
     fact_window.withdraw()
 
 
+def save_project():
+    change_title_text()
+    # if not project_name:
+    #     project_name = "SeraphNote__New_File__.pk1"
+    save_location = "SeraphNote_Saves/" + project_name
+    pandas_ut.save_project(screen_ut.node_list, save_location)
+
+
+def load_project():
+    change_title_text()
+    save_location = "SeraphNote_Saves/" + project_name
+    nodes_list_in = pandas_ut.load_project(save_location)
+    screen_ut.node_list = nodes_list_in
+
+
+
+
 def create_root_control():
     global title_label_entry
     # bond_num = screen_ut.changeable_node
@@ -168,15 +185,27 @@ def create_root_control():
     title_label = Label(root_window, text="Main Control Panel")
     title_label.pack()
 
-    title_label_entry = Entry(root_window)
+
+    # Project name
+    Label(root_window, text="Project Name").pack(anchor="w", pady = (7, 0))
+    title_label_entry = Entry(root_window, width=30)
     title_label_entry.pack()
 
-    change_title_button = Button(root_window, text="Update Label")
+    change_title_button = Button(root_window, text="Update Project Name")
     change_title_button.config(command=lambda: change_title_text())
-    change_title_button.place(x=50, y=50)
+    change_title_button.place(x=40, y=80)
+
+    # Saving project data
+    save_project_button = Button(root_window, text="Save Project -> 💾 ")
+    save_project_button.config(command=lambda: save_project())
+    save_project_button.place(x=50, y=110)
+
+    # Loading  project data
+    load_project_button = Button(root_window, text="💾 -> Load Project")
+    load_project_button.config(command=lambda: load_project())
+    load_project_button.place(x=50, y=140)
 
     # Add version labels
-
     python_version = "Python Ver. " + str(platform.python_version())
     pygame_version = "PyGame Ver. " + str(screen_ut.pygame_version)
     pandas_version = "Pandas Ver. " + str(pandas_ut.pandas_version)

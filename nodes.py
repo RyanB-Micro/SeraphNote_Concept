@@ -113,6 +113,33 @@ class Node:
     def set_text(self, text):
         self.text = text
 
+    def data_out(self):
+        # All data from node formatted for saving
+        data = {
+            'id': self.id,
+            'x': self.x,
+            'y': self.y,
+            'width': self.width,
+            'height': self.height,
+            'colour': self.colour,
+            'text': self.text,
+            'bonds': self.bonds
+        }
+
+        return data
+
+    def data_in(self, data):
+        # All data from node formatted for loading
+        self.id = data['id']
+        self.x = data['x']
+        self.y = data['y']
+        self.width = data['width']
+        self.height = data['height']
+        self.colour = data['colour']
+        self.text = data['text']
+        self.bonds = data['bonds']
+
+
 
 
 class Fact:

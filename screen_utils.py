@@ -1,5 +1,6 @@
 import pygame
 import nodes as nodes
+import pandas as pd
 
 WIDTH = 1490
 HEIGHT = 914
