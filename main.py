@@ -120,6 +120,32 @@ def delete_node():
     node_window.withdraw()
 
 
+def delete_fact():
+    if screen_ut.changeable_fact is None:
+        return
+
+    deleting_fact = screen_ut.fact_list[screen_ut.changeable_fact]
+
+    screen_ut.delete_item(deleting_fact, screen_ut.fact_list)
+    screen_ut.changeable_fact = None
+
+    # Hide window
+    fact_window.withdraw()
+
+
+def delete_bond():
+    if screen_ut.changeable_bond is None:
+        return
+
+    deleting_bond = screen_ut.bond_list[screen_ut.changeable_bond]
+
+    screen_ut.delete_bond(deleting_bond)
+    screen_ut.changeable_bond = None
+
+    # Hide window
+    bond_window.withdraw()
+
+
 def cancel_node_edit():
     screen_ut.changeable_node = None
     node_window.withdraw()
@@ -152,9 +178,10 @@ def create_root_control():
     change_title_button.place(x=50, y=50)
 
     # Add version labels
-    python_version = "Python Ver. " + platform.python_version()
-    pygame_version = "PyGame Ver. " + screen_ut.pygame_version
-    pandas_version = "Pandas Ver. " + pandas_ut.pandas_version
+
+    python_version = "Python Ver. " + str(platform.python_version())
+    pygame_version = "PyGame Ver. " + str(screen_ut.pygame_version)
+    pandas_version = "Pandas Ver. " + str(pandas_ut.pandas_version)
     python_label = Label(root_window, text=python_version)
     python_label.place(x=40, y=200)
     pygame_label = Label(root_window, text=pygame_version)
@@ -189,8 +216,6 @@ def create_node_control():
     delete_node_button.config(command=lambda: delete_node())
     delete_node_button.place(x=50, y=200)
 
-    title_label = Label(node_window, text="Node Control Panel")
-
 
 def create_fact_control():
     global fact_label_entry, fact_body_entry
@@ -215,6 +240,9 @@ def create_fact_control():
     cancel_label_button.config(command=lambda: cancel_fact_edit())
     cancel_label_button.place(x=50, y=140)
 
+    delete_fact_button = Button(fact_window, text="Delete Fact")
+    delete_fact_button.config(command=lambda: delete_fact())
+    delete_fact_button.place(x=50, y=200)
 
 
 def create_bond_control():
@@ -237,7 +265,9 @@ def create_bond_control():
     cancel_label_button.config(command=lambda: cancel_bond_edit())
     cancel_label_button.place(x=50, y=80)
 
-
+    delete_bond_button = Button(bond_window, text="Delete Bond")
+    delete_bond_button.config(command=lambda: delete_bond())
+    delete_bond_button.place(x=50, y=200)
 
 
 def detect_node_selection():

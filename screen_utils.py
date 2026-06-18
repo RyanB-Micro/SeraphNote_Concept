@@ -12,6 +12,7 @@ screen = None
 clock = None
 font = None
 font_small = None
+pygame_version = pygame.version.ver
 
 # Display Colours
 DARK_GREY = (123, 125, 123)
@@ -46,9 +47,6 @@ changeable_bond = None
 changeable_fact = None
 selected_tool = None
 cursor_colour = VISION_AZURE
-
-
-pygame_version = None
 
 
 tool_strip_width = 64
@@ -286,6 +284,10 @@ def delete_item(item, item_list):
     # remove any effected bonds
     for bond in effected_bonds:
         bond_list.remove(bond)
+
+
+def delete_bond(bond):
+    bond_list.remove(bond)
 
 
 
