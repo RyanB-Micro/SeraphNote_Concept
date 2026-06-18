@@ -33,6 +33,17 @@ def stop_screen():
     screen_thread.join(timeout=2)
 
 
+def quit_all():
+    global stop_event
+    # Stop pygame parts
+    stop_event.set()
+    screen_ut.pygame_running = False
+
+    # Stop tk parts
+    root_window.quit()
+    root_window.destroy()
+
+
 def screen_loop():
     while not stop_event.is_set():
         if screen_ut.pygame_running == False:
@@ -40,7 +51,9 @@ def screen_loop():
 
         screen_ut.screen_loop()
         # Once screen loop finished -> close thread
-        stop_screen()
+        stop_event.set()
+        break
+        #stop_screen()
 
 
 def change_title_text():
@@ -86,7 +99,7 @@ def create_root_control():
     global title_label_entry
     # bond_num = screen_ut.changeable_node
     root_window.geometry("200x300")
-    root_window.protocol("WM_DELETE_WINDOW", root_window.withdraw)
+    root_window.protocol("WM_DELETE_WINDOW", quit_all)
     root_window.title("Main Control")
 
     title_label = Label(root_window, text="Main Control Panel")
@@ -191,6 +204,10 @@ def main():
     detect_bond_selection()
 
     root_window.mainloop()
+
+    # Once windows closed -> Make sure thread ends
+    if screen_thread.is_alive():
+        screen_thread.join()
 
 
 

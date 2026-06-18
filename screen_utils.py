@@ -220,23 +220,26 @@ def screen_loop():
     #create_toolstrip()
 
     while pygame_running:
+        # Clock timing
+        delta_time = clock.tick(FPS) / 1000
+        delta_time = max(0.001, min(0.1, delta_time))  # clamp for math error
+
+        # blank screen
+        screen.fill(CALM_AZURE)
+        draw_toolstrip()
+
+        # Draw Nodes
+        draw_nodes()
+        draw_bonds()
+        pygame.display.set_caption(window_title)
+
+
         for event in pygame.event.get():
             # Detect if window is being closed
             if event.type == pygame.QUIT:
                 pygame_running = False
 
-            # Clock timing
-            delta_time = clock.tick(FPS) / 1000
-            delta_time = max(0.001, min(0.1, delta_time))  # clamp for math error
 
-            # blank screen
-            screen.fill(CALM_AZURE)
-            draw_toolstrip()
-
-            # Draw Nodes
-            draw_nodes()
-            draw_bonds()
-            pygame.display.set_caption(window_title)
 
 
             # Check mouse
