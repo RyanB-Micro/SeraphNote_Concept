@@ -3,7 +3,6 @@ from tkinter import *
 import threading
 import screen_utils as screen_ut
 
-
 # Window Settings
 #----------------
 WIDTH = 1490
@@ -12,9 +11,9 @@ HEIGHT = 914
 stop_event = threading.Event()
 screen_thread = None
 
-root_window = Tk()
-node_window = Toplevel(root_window)
-bond_window = Toplevel(root_window)
+root_window = None
+node_window = None
+bond_window = None
 title_label_entry = None
 node_label_entry = None
 bond_label_entry = None
@@ -46,11 +45,12 @@ def screen_loop():
 
 def change_title_text():
     global main_title_label
-    if main_title_label is None:
-        return
+    new_title = title_label_entry.get().strip()
+    if not new_title:
+        new_title = "SeraphNote__New_File__"
 
-    main_title_label = title_label_entry.get()
-    screen_ut.pygame.display.set_caption(main_title_label)
+    main_title_label = "SeraphNote_" + new_title
+    screen_ut.window_title = main_title_label
 
 
 def change_node_text():
@@ -71,6 +71,15 @@ def change_bond_text():
     screen_ut.bond_list[screen_ut.changeable_bond].text = text
     screen_ut.changeable_bond = None
     bond_window.withdraw()
+
+
+def cancel_bond_edit():
+    screen_ut.changeable_bond = None
+    bond_window.withdraw()
+
+def cancel_node_edit():
+    screen_ut.changeable_node = None
+    node_window.withdraw()
 
 
 def create_root_control():
@@ -94,7 +103,7 @@ def create_root_control():
 def create_node_control():
     global node_label_entry
     node_window.geometry("200x300")
-    node_window.protocol("WM_DELETE_WINDOW", node_window.withdraw)
+    node_window.protocol("WM_DELETE_WINDOW", cancel_node_edit)
     node_window.title("Node Control")
 
     title_label = Label(node_window, text="Node Control Panel")
@@ -107,12 +116,16 @@ def create_node_control():
     update_label_button.config(command=lambda: change_node_text())
     update_label_button.place(x=50, y=50)
 
+    cancel_label_button = Button(node_window, text="Cancel")
+    cancel_label_button.config(command=lambda: cancel_node_edit())
+    cancel_label_button.place(x=50, y=80)
+
 
 
 def create_bond_control():
     global bond_label_entry
     bond_window.geometry("200x300")
-    bond_window.protocol("WM_DELETE_WINDOW", bond_window.withdraw)
+    bond_window.protocol("WM_DELETE_WINDOW", cancel_bond_edit)
     bond_window.title("Bond Control")
 
     title_label = Label(bond_window, text="Bond Control Panel")
@@ -125,11 +138,11 @@ def create_bond_control():
     update_label_button.config(command=lambda: change_bond_text())
     update_label_button.place(x=50, y=50)
 
+    cancel_label_button = Button(bond_window, text="Cancel")
+    cancel_label_button.config(command=lambda: cancel_bond_edit())
+    cancel_label_button.place(x=50, y=80)
 
 
-
-def detect_root_selection():
-    node_window.after(100, detect_node_selection)
 
 
 def detect_node_selection():
@@ -154,9 +167,19 @@ def detect_bond_selection():
     bond_window.after(100, detect_bond_selection)
 
 
+
+
 def main():
+    global root_window, node_window, bond_window
     print ("Program Running")
+    root_window = Tk()
+    node_window = Toplevel(root_window)
+    bond_window = Toplevel(root_window)
+
+    screen_ut.WIDTH = WIDTH
+    screen_ut.HEIGHT = HEIGHT
     start_screen()
+
     create_root_control()
     create_node_control()
     create_bond_control()
@@ -164,20 +187,10 @@ def main():
     node_window.withdraw()
     bond_window.withdraw()
 
-    detect_root_selection()
     detect_node_selection()
     detect_bond_selection()
 
     root_window.mainloop()
-
-    # bond_window.withdraw()
-    # while True:
-    #
-    #     if screen_ut.pygame_running:
-    #         if screen_ut.changeable_bond:
-    #             bond_window.deiconify()
-
-
 
 
 

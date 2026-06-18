@@ -1,5 +1,9 @@
 import pygame
 import nodes as nodes
+from main import main_title_label
+
+WIDTH = 1490
+HEIGHT = 914
 
 # PyGame Settings
 #-----------------
@@ -21,16 +25,29 @@ SERAPH = (9*7, 1*7, 4*7)
 CALM_AZURE = (70, 150, 153)
 CHILL_GREY = (102, 153, 153)
 LINE_MAKE = (102, 153, 153)
+VISION_AZURE = (7+(9+1+4), 7*(9+1+4), 7*(9+1+4))
 
 
 node_list = []
 bond_list = []
+tools_list = []
+tool_choices = [("New Node", SERAPH), ("New Fact", CALM_AZURE), ("New Source", CHILL_GREY), ("New Quote", LINE_MAKE)]
 draggable_node = None
 build_line = False
 initial_corner = None
 terminate_corner = None
 changeable_node = None
 changeable_bond = None
+selected_tool = None
+cursor_colour = VISION_AZURE
+
+
+tool_strip_width = 64
+tool_width = 100
+tool_height = 50
+tool_spacing = 20
+
+window_title = "SeraphNote"
 
 
 
@@ -42,9 +59,6 @@ def create_node():
     node_list.append(nodes.Node(100, 220, SERAPH, "Test 3"))
     node_list.append(nodes.Node(280, 200, SERAPH, "Test 4"))
 
-
-# def draw_tool_box():
-#     tool_box = pygame.Rect(0, 0, 35, 15)
 
 def draw_nodes():
     global node_list
@@ -130,39 +144,80 @@ def init_screen(WIDTH, HEIGHT):
     pygame.display.set_caption("SeraphNote")
     pygame_running = True
 
+    create_toolstrip()
+
 
 def line_builder(original_corner, mouse_x, mouse_y):
-    node = original_corner[0]
-    corner_num = original_corner[1]
-    corner_x = node.corners[corner_num][0]
-    corner_y = node.corners[corner_num][1]
+    if build_line is not None:
+        node = original_corner[0]
+        corner_num = original_corner[1]
+        corner_x = node.corners[corner_num][0]
+        corner_y = node.corners[corner_num][1]
 
-    pygame.draw.line(screen, DARK_GREY, (corner_x, corner_y), (mouse_x, mouse_y), 2)
+        pygame.draw.line(screen, DARK_GREY, (corner_x, corner_y), (mouse_x, mouse_y), 2)
 
 
 def bond_builder(original_corner, end_corner, mouse_x, mouse_y):
     global bond_list
-    node_1 = original_corner[0]
-    corner_1_num = original_corner[1]
-    # corner_1_x = node_1.corners[corner_1_num][0]
-    # corner_1_y = node_1.corners[corner_1_num][1]
+    if terminate_corner is not None:
+        node_1 = original_corner[0]
+        corner_1_num = original_corner[1]
+        # corner_1_x = node_1.corners[corner_1_num][0]
+        # corner_1_y = node_1.corners[corner_1_num][1]
 
-    node_2 = end_corner[0]
-    corner_2_num = end_corner[1]
-    # corner_2_x = node_2.corners[corner_2_num][0]
-    # corner_2_y = node_2.corners[corner_2_num][1]
+        node_2 = end_corner[0]
+        corner_2_num = end_corner[1]
+        # corner_2_x = node_2.corners[corner_2_num][0]
+        # corner_2_y = node_2.corners[corner_2_num][1]
 
-    bond = nodes.Bond(node_1, node_2, corner_1_num, corner_2_num)
-    bond_list.append(bond)
+        bond = nodes.Bond(node_1, node_2, corner_1_num, corner_2_num)
+        bond_list.append(bond)
+
+
+
+
+def create_toolstrip():
+    global tools_list
+
+    tools_list.clear()
+
+    for i in range(len(tool_choices)):
+        tool_buffer = pygame.Rect(0, 0, tool_width, tool_height)
+        tool_buffer.center = (
+            ((i * tool_width) + i*tool_spacing) + tool_width,
+            ((HEIGHT - tool_strip_width) + (tool_height/2))
+        )
+        tools_list.append(tool_buffer)
+
+
+
+def draw_toolstrip():
+    pygame.draw.rect(screen, VISION_AZURE, (0, HEIGHT - tool_strip_width - 10, WIDTH, HEIGHT))
+    tool_strip_box = pygame.Rect(0, HEIGHT - tool_strip_width, WIDTH, HEIGHT)
+    pygame.draw.rect(screen, DARK_GREY, tool_strip_box)
+
+    for i, tool in enumerate(tools_list):
+        pygame.draw.rect(screen, tool_choices[i][1], tool)
+
+        # Draw text
+        label_text = font.render(tool_choices[i][0], True, (255 - 7, 255 - 7, 255 - 7))
+        label_rect = label_text.get_rect()
+        label_rect.center = (
+            ((i * tool_width) + i * tool_spacing) + tool_width,
+            ((HEIGHT - tool_strip_width) + (tool_height / 2))
+        )
+        screen.blit(label_text, label_rect)
 
 
 
 
 def screen_loop():
     global clock, font, screen, pygame_running, draggable_node, build_line,\
-        initial_corner, terminate_corner, changeable_node, changeable_bond
+        initial_corner, terminate_corner, changeable_node, changeable_bond, \
+        selected_tool, cursor_colour
 
-    create_node()
+    #create_node()
+    #create_toolstrip()
 
     while pygame_running:
         for event in pygame.event.get():
@@ -176,10 +231,12 @@ def screen_loop():
 
             # blank screen
             screen.fill(CALM_AZURE)
+            draw_toolstrip()
 
             # Draw Nodes
             draw_nodes()
             draw_bonds()
+            pygame.display.set_caption(window_title)
 
 
             # Check mouse
@@ -206,18 +263,43 @@ def screen_loop():
                         if bond.id_box.collidepoint(event.pos):
                             changeable_bond = num
 
+                    for num, tool in enumerate(tools_list):
+                        if tool.collidepoint(event.pos):
+                            #if selected_tool == None:
+                            selected_tool = num
+                            cursor_colour = tool_choices[num][1]
+
+
+
+
                 if event.button == 3: # right mouse button
                     # check if mouse over box
                     for num, node in enumerate(node_list):
                         # check if box selected
                         if node.box.collidepoint(event.pos):
                             draggable_node = node
+                    if selected_tool != None:
+                        if selected_tool == 0:
+                            node_list.append(nodes.Node(event.pos[0], event.pos[1], SERAPH, "New_Node"))
+                            selected_tool = None
+                    if build_line == True:
+                        build_line = False
+                        initial_corner = None
+                        terminate_corner = None
 
 
 
 
             # move active node
             if event.type == pygame.MOUSEMOTION:
+                # Draw Cursor
+                if selected_tool == None:
+                    cursor_colour = VISION_AZURE
+                if build_line:
+                    cursor_colour = LINE_MAKE
+                pygame.draw.circle(screen, cursor_colour, event.pos, 5)
+
+                # Action Logic
                 if draggable_node != None:
                     draggable_node.set_position(event.pos[0], event.pos[1])
                 if build_line:
@@ -226,6 +308,8 @@ def screen_loop():
                     bond_builder(initial_corner, terminate_corner, event.pos[0], event.pos[1])
                     initial_corner = None
                     terminate_corner = None
+
+
 
 
             # if mouse up, drop active box
