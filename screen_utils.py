@@ -1,6 +1,5 @@
 import pygame
 import nodes as nodes
-from main import main_title_label
 
 WIDTH = 1490
 HEIGHT = 914
@@ -16,6 +15,7 @@ font_small = None
 
 # Display Colours
 DARK_GREY = (123, 125, 123)
+MID_GREY = (194, 194, 194)
 DARK_AZURE = (0, 105, 156)
 BACK_AZURE = (16, 137, 180)
 COOL_AZURE = (65, 174, 205)
@@ -25,19 +25,25 @@ SERAPH = (9*7, 1*7, 4*7)
 CALM_AZURE = (70, 150, 153)
 CHILL_GREY = (102, 153, 153)
 LINE_MAKE = (102, 153, 153)
+MID_YELLOW = (255, 194, 49)
+LIGHT_YELLOW = (255, 255, 149)
+POINT_BLUE = (81, 181, 255)
 VISION_AZURE = (7+(9+1+4), 7*(9+1+4), 7*(9+1+4))
 
 
 node_list = []
+fact_list = []
 bond_list = []
 tools_list = []
-tool_choices = [("New Node", SERAPH), ("New Fact", CALM_AZURE), ("New Source", CHILL_GREY), ("New Quote", LINE_MAKE)]
+tool_choices = [("New Node", SERAPH), ("New Fact", VISION_AZURE), ("New Source", CHILL_GREY), ("New Quote", LINE_MAKE)]
 draggable_node = None
+draggable_fact = None
 build_line = False
 initial_corner = None
 terminate_corner = None
 changeable_node = None
 changeable_bond = None
+changeable_fact = None
 selected_tool = None
 cursor_colour = VISION_AZURE
 
@@ -91,13 +97,66 @@ def draw_nodes():
             pygame.draw.circle(screen, DARK_AZURE, corner, 5)
 
 
+def draw_facts():
+    global fact_list
+
+    for num, fact in enumerate(fact_list):
+        #pygame.draw.rect(screen, node.colour, (node.x, node.y, node.width, node.height))
+
+        if num == changeable_fact:
+            pygame.draw.rect(screen, DARK_GREY, fact.box, border_radius=7)
+        else:
+            pygame.draw.rect(screen, fact.colour, fact.box, border_radius=7)
+
+        label_text = font.render(fact.title, True, (255, 255, 255))
+        label_rect = label_text.get_rect()
+        label_rect.center = (
+                                fact.x + (fact.width / 2),
+                                fact.y + ((fact.height / 5) * 1)
+                            )
+        screen.blit(label_text, label_rect)
+
+        body_text = font_small.render(fact.text, True, (255, 255, 255))
+        body_rect = body_text.get_rect()
+        body_rect.center = (
+            fact.x + (fact.width / 2),
+            fact.y + ((fact.height / 5) * 2)
+        )
+        screen.blit(body_text, body_rect)
+
+
+        id_text = font_small.render(fact.id, True, (255, 255, 255))
+        id_rect = id_text.get_rect()
+        id_rect.center = (
+            fact.x + (fact.width / 2),
+            fact.y + ((fact.height / 5) * 4)
+        )
+        screen.blit(id_text, id_rect)
+
+        for corner in fact.corners:
+            pygame.draw.circle(screen, DARK_AZURE, corner, 5)
+
+
 
 def draw_bonds():
     for num, bond in enumerate(bond_list):
         bond.update_position()
 
+        # Defualt direction of points arrow
+        points = [(bond.term_x - 7, bond.term_y - 7), (bond.term_x - 7, bond.term_y + 7),
+                  (bond.term_x, bond.term_y)]
+
         # Draw bond line
         pygame.draw.line(screen, SKY_AZURE, (bond.x, bond.y), (bond.term_x, bond.term_y), 2)
+
+        # draw terminating direction arrow
+        if bond.x > bond.term_x:
+            points = [(bond.term_x + 7, bond.term_y - 7), (bond.term_x + 7, bond.term_y + 7),
+                      (bond.term_x, bond.term_y)]
+
+        # Draw terminating arrow
+        #pygame.draw.polygon(screen, COOL_AZURE, points, width=0)
+        pygame.draw.polygon(screen, POINT_BLUE, points, width=0)
 
         # Draw id box
         # id_box = pygame.Rect(0, 0, 35, 15)
@@ -214,7 +273,7 @@ def draw_toolstrip():
 def screen_loop():
     global clock, font, screen, pygame_running, draggable_node, build_line,\
         initial_corner, terminate_corner, changeable_node, changeable_bond, \
-        selected_tool, cursor_colour
+        selected_tool, cursor_colour, draggable_fact, changeable_fact
 
     #create_node()
     #create_toolstrip()
@@ -230,6 +289,7 @@ def screen_loop():
 
         # Draw Nodes
         draw_nodes()
+        draw_facts()
         draw_bonds()
         pygame.display.set_caption(window_title)
 
@@ -266,6 +326,23 @@ def screen_loop():
                         if bond.id_box.collidepoint(event.pos):
                             changeable_bond = num
 
+                    # check if over fact
+                    for num, fact in enumerate(fact_list):
+                        # check if box selected
+                        if fact.box.collidepoint(event.pos):
+                            changeable_fact = num
+                        # check if circle selected
+                        for i, corner in enumerate(fact.corners):
+                            # if within radius of the circle
+                            if ((event.pos[0] - corner[0]) ** 2 + (event.pos[1] - corner[1]) ** 2) <= 25:
+                                if build_line == False: # Start making line
+                                    build_line = True
+                                    initial_corner = (fact, i)
+                                else: # finish making line
+                                    build_line = False
+                                    terminate_corner = (fact, i)
+
+                    # check if over toolstrip icon
                     for num, tool in enumerate(tools_list):
                         if tool.collidepoint(event.pos):
                             #if selected_tool == None:
@@ -281,10 +358,21 @@ def screen_loop():
                         # check if box selected
                         if node.box.collidepoint(event.pos):
                             draggable_node = node
+
+                    # check if mouse over box
+                    for num, fact in enumerate(fact_list):
+                        # check if box selected
+                        if fact.box.collidepoint(event.pos):
+                            draggable_node = fact
+
                     if selected_tool != None:
                         if selected_tool == 0:
                             node_list.append(nodes.Node(event.pos[0], event.pos[1], SERAPH, "New_Node"))
                             selected_tool = None
+                        if selected_tool == 1:
+                            fact_list.append(nodes.Fact(event.pos[0], event.pos[1], VISION_AZURE, "New_Fact"))
+                            selected_tool = None
+
                     if build_line == True:
                         build_line = False
                         initial_corner = None
@@ -305,6 +393,8 @@ def screen_loop():
                 # Action Logic
                 if draggable_node != None:
                     draggable_node.set_position(event.pos[0], event.pos[1])
+                if draggable_fact != None:
+                    draggable_fact.set_position(event.pos[0], event.pos[1])
                 if build_line:
                     line_builder(initial_corner, event.pos[0], event.pos[1])
                 if terminate_corner:

@@ -97,3 +97,37 @@ class Node:
 
     def set_text(self, text):
         self.text = text
+
+
+class Fact:
+    def __init__(self, x, y, colour, title):
+        self.x = x
+        self.y = y
+        self.title = title
+        self.text = " "
+        self.colour = colour
+
+        self.width = 150
+        self.height = 150
+        self.bonds = []
+        self.box = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.id = gen_node_id()
+
+        self.corners = [(self.x,self.y), (self.x+self.width,self.y), (self.x, self.y+(self.height/2)),
+                        (self.x+self.width, self.y+(self.height/2)), (self.x, self.y+self.height), (self.x+self.width, self.y+self.height)]
+
+        self.active = False
+
+        self.bonds = [None, None, None, None, None, None]
+
+
+    def set_position(self, x, y):
+        self.x = x
+        self.y = y
+        self.box.topleft = (x, y)
+        self.corners = [(self.x, self.y), (self.x + self.width, self.y), (self.x, self.y + (self.height / 2)),
+                        (self.x + self.width, self.y + (self.height / 2)), (self.x, self.y + self.height),
+                        (self.x + self.width, self.y + self.height)]
+
+    def set_text(self, text):
+        self.text = text
