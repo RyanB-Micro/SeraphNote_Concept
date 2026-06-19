@@ -72,6 +72,8 @@ class Bond:
     def __init__(self, node_1, node_2, corner_1, corner_2):
         self.node_1 = node_1
         self.node_2 = node_2
+        self.node_1_id = node_1.id
+        self.node_2_id = node_2.id
         self.corner_1 = corner_1
         self.corner_2 = corner_2
         self.x = 0
@@ -94,6 +96,20 @@ class Bond:
 
     def set_text(self, text):
         self.text = text
+
+    def refresh_connections(self, nodes_in, facts_in):
+        for node in nodes_in:
+            if node.id == self.node_1_id:
+                self.node_1 = node
+            if node.id == self.node_2_id:
+                self.node_2 = node
+
+        for fact in facts_in:
+            if fact.id == self.node_1_id:
+                self.node_1 = fact
+            if fact.id == self.node_2_id:
+                self.node_2 = fact
+
 
     def data_out(self):
         # All data from node formatted for saving

@@ -438,7 +438,6 @@ def screen_loop():
                     cursor_colour = VISION_AZURE
                 if build_line:
                     cursor_colour = LINE_MAKE
-                pygame.draw.circle(screen, cursor_colour, event.pos, 5)
 
                 # Action Logic
                 if draggable_node != None:
@@ -452,6 +451,9 @@ def screen_loop():
                     initial_corner = None
                     terminate_corner = None
 
+                # Cursor
+                # pygame.draw.circle(screen, cursor_colour, event.pos, 5)
+
 
 
 
@@ -461,7 +463,6 @@ def screen_loop():
                     draggable_node = None
 
 
-            #pygame.draw.line(screen, DARK_GREY, (node_list[0].x, node_list[0].y), (node_list[1].x, node_list[1].y), 2)
 
 
         # Update screen

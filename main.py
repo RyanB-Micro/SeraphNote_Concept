@@ -1,5 +1,7 @@
 import pygame
+import os
 from tkinter import *
+from tkinter import filedialog
 import threading
 import platform
 import screen_utils as screen_ut
@@ -22,7 +24,7 @@ title_label_entry = None
 node_label_entry = None
 bond_label_entry = None
 fact_label_entry = None
-fact_body_entry = None
+fact_body_text = None
 
 project_name = "SeraphNote__New_File__.pk1"
 
@@ -87,7 +89,7 @@ def change_fact_text():
         return
 
     label = fact_label_entry.get()
-    body = fact_body_entry.get()
+    body = str(fact_body_text.get(1.0, END))
     screen_ut.fact_list[screen_ut.changeable_fact].title = label
     screen_ut.fact_list[screen_ut.changeable_fact].text = body
     screen_ut.changeable_fact = None
@@ -158,17 +160,38 @@ def cancel_fact_edit():
     fact_window.withdraw()
 
 
+# def save_project():
+#     change_title_text()
+#     # if not project_name:
+#     #     project_name = "SeraphNote__New_File__.pk1"
+#     save_location = "SeraphNote_Saves/" + project_name
+#     pandas_ut.save_project(screen_ut.node_list, screen_ut.fact_list, screen_ut.bond_list, save_location)
+
 def save_project():
+    global  project_name
+    # get latest project name typed in
     change_title_text()
-    # if not project_name:
-    #     project_name = "SeraphNote__New_File__.pk1"
-    save_location = "SeraphNote_Saves/" + project_name
+
+    # create directory if doest exist
+    os.makedirs("SeraphNote_Saves/", exist_ok=True)
+
+    # Ensure a name wass entered
+    if len(project_name) < 1:
+        project_name = "SeraphNote__New_File__.pk1"
+
+    # Open file location window to save project
+    file = filedialog.asksaveasfilename(initialfile=project_name, initialdir="SeraphNote_Saves/", defaultextension=".pk1", filetypes=[("Project File", ".pk1")])
+    save_location = file
+
+    # call pickle save function
     pandas_ut.save_project(screen_ut.node_list, screen_ut.fact_list, screen_ut.bond_list, save_location)
 
 
 def load_project():
     change_title_text()
-    save_location = "SeraphNote_Saves/" + project_name
+    file = filedialog.askopenfilename(initialfile=project_name, defaultextension=".pk1", filetypes=[("Project File", ".pk1")])
+    save_location = file
+    # save_location = "SeraphNote_Saves/" + project_name
     nodes_list_in, facts_list_in, bonds_list_in = pandas_ut.load_project(save_location)
     screen_ut.node_list = nodes_list_in
     screen_ut.fact_list = facts_list_in
@@ -248,7 +271,7 @@ def create_node_control():
 
 
 def create_fact_control():
-    global fact_label_entry, fact_body_entry
+    global fact_label_entry, fact_body_text
     fact_window.geometry("200x300")
     fact_window.protocol("WM_DELETE_WINDOW", cancel_fact_edit)
     fact_window.title("Fact Control")
@@ -261,16 +284,16 @@ def create_fact_control():
     fact_label_entry.pack()
 
     Label(fact_window, text="Fact Text").pack(anchor="w", pady=(7, 0))
-    fact_body_entry = Entry(fact_window, width=30)
-    fact_body_entry.pack()
+    fact_body_text = Text(fact_window,height=30, width=30)
+    fact_body_text.pack()
 
     update_label_button = Button(fact_window, text="Update Fact")
     update_label_button.config(command=lambda: change_fact_text())
-    update_label_button.place(x=50, y=130)
+    update_label_button.place(x=50, y=160)
 
     cancel_label_button = Button(fact_window, text="Cancel")
     cancel_label_button.config(command=lambda: cancel_fact_edit())
-    cancel_label_button.place(x=60, y=160)
+    cancel_label_button.place(x=60, y=190)
 
     delete_fact_button = Button(fact_window, text="Delete Fact")
     delete_fact_button.config(command=lambda: delete_fact())

@@ -87,6 +87,11 @@ def save_project(nodes_list, facts_list, bonds_list, filename="SeraphNote_Save_N
     print(f"Project _{filename}_ Saved")
 
 
+def refresh_bonds(bonds, nodes, facts):
+    for bond in bonds:
+        bond.refresh_connections(nodes, facts)
+
+
 def load_project(filename="SeraphNote_Save_New.pk1"):
 
     data_in = pd.read_pickle(filename)
@@ -98,5 +103,7 @@ def load_project(filename="SeraphNote_Save_New.pk1"):
     nodes_list = dataframe_to_nodes(node_data)
     fact_list = dataframe_to_facts(fact_data)
     bond_list = dataframe_to_bonds(bond_data)
+
+    refresh_bonds(bond_list, nodes_list, fact_list)
 
     return nodes_list, fact_list, bond_list
