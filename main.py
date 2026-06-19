@@ -163,14 +163,16 @@ def save_project():
     # if not project_name:
     #     project_name = "SeraphNote__New_File__.pk1"
     save_location = "SeraphNote_Saves/" + project_name
-    pandas_ut.save_project(screen_ut.node_list, save_location)
+    pandas_ut.save_project(screen_ut.node_list, screen_ut.fact_list, screen_ut.bond_list, save_location)
 
 
 def load_project():
     change_title_text()
     save_location = "SeraphNote_Saves/" + project_name
-    nodes_list_in = pandas_ut.load_project(save_location)
+    nodes_list_in, facts_list_in, bonds_list_in = pandas_ut.load_project(save_location)
     screen_ut.node_list = nodes_list_in
+    screen_ut.fact_list = facts_list_in
+    screen_ut.bond_list = bonds_list_in
 
 
 
@@ -227,21 +229,22 @@ def create_node_control():
     title_label = Label(node_window, text="Node Control Panel")
     title_label.pack()
 
-    node_label_entry = Entry(node_window)
+    Label(node_window, text="Node Name").pack(anchor="w", pady=(7, 0))
+    node_label_entry = Entry(node_window, width=30)
     node_label_entry.pack()
 
-    update_label_button = Button(node_window, text="Update Label")
+    update_label_button = Button(node_window, text="Update Node")
     update_label_button.config(command=lambda: change_node_text())
-    update_label_button.place(x=50, y=50)
+    update_label_button.place(x=50, y=80)
 
     cancel_label_button = Button(node_window, text="Cancel")
     cancel_label_button.config(command=lambda: cancel_node_edit())
-    cancel_label_button.place(x=50, y=80)
+    cancel_label_button.place(x=60, y=110)
 
 
     delete_node_button = Button(node_window, text="Delete Node")
     delete_node_button.config(command=lambda: delete_node())
-    delete_node_button.place(x=50, y=200)
+    delete_node_button.place(x=50, y=250)
 
 
 def create_fact_control():
@@ -253,23 +256,25 @@ def create_fact_control():
     title_label = Label(fact_window, text="Fact Control Panel")
     title_label.pack()
 
-    fact_label_entry = Entry(fact_window)
+    Label(fact_window, text="Fact Name").pack(anchor="w", pady=(7, 0))
+    fact_label_entry = Entry(fact_window, width=30)
     fact_label_entry.pack()
 
-    fact_body_entry = Entry(fact_window)
+    Label(fact_window, text="Fact Text").pack(anchor="w", pady=(7, 0))
+    fact_body_entry = Entry(fact_window, width=30)
     fact_body_entry.pack()
 
     update_label_button = Button(fact_window, text="Update Fact")
     update_label_button.config(command=lambda: change_fact_text())
-    update_label_button.place(x=50, y=100)
+    update_label_button.place(x=50, y=130)
 
     cancel_label_button = Button(fact_window, text="Cancel")
     cancel_label_button.config(command=lambda: cancel_fact_edit())
-    cancel_label_button.place(x=50, y=140)
+    cancel_label_button.place(x=60, y=160)
 
     delete_fact_button = Button(fact_window, text="Delete Fact")
     delete_fact_button.config(command=lambda: delete_fact())
-    delete_fact_button.place(x=50, y=200)
+    delete_fact_button.place(x=50, y=250)
 
 
 def create_bond_control():
@@ -281,20 +286,21 @@ def create_bond_control():
     title_label = Label(bond_window, text="Bond Control Panel")
     title_label.pack()
 
-    bond_label_entry = Entry(bond_window)
+    Label(bond_window, text="Bond Name").pack(anchor="w", pady=(7, 0))
+    bond_label_entry = Entry(bond_window, width=30)
     bond_label_entry.pack()
 
-    update_label_button = Button(bond_window, text="Update Label")
+    update_label_button = Button(bond_window, text="Update Bond")
     update_label_button.config(command=lambda: change_bond_text())
-    update_label_button.place(x=50, y=50)
+    update_label_button.place(x=50, y=80)
 
     cancel_label_button = Button(bond_window, text="Cancel")
     cancel_label_button.config(command=lambda: cancel_bond_edit())
-    cancel_label_button.place(x=50, y=80)
+    cancel_label_button.place(x=60, y=110)
 
     delete_bond_button = Button(bond_window, text="Delete Bond")
     delete_bond_button.config(command=lambda: delete_bond())
-    delete_bond_button.place(x=50, y=200)
+    delete_bond_button.place(x=50, y=250)
 
 
 def detect_node_selection():

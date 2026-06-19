@@ -27,15 +27,59 @@ def dataframe_to_nodes(node_dataframe):
 
     return node_list
 
+def facts_to_dataframe(facts_list):
+    # Clear buffer for dataframe
+    facts_data = []
+
+    # Loop through each node created
+    for facts in facts_list:
+        facts_data.append(facts.data_out())
+
+    return pd.DataFrame(facts_data)
 
 
-def save_project(nodes_list, filename="SeraphNote_Save_New.pk1"):
+def dataframe_to_facts(facts_dataframe):
+    facts_list = []
+    for _,row in facts_dataframe.iterrows():
+        facts = nodes.Fact(row['x'], row['y'], row['colour'], row['text'])
+        facts.data_in(row)
+        facts_list.append(facts)
+
+    return facts_list
+
+
+def bonds_to_dataframe(bonds_list):
+    # Clear buffer for dataframe
+    bonds_data = []
+
+    # Loop through each node created
+    for bonds in bonds_list:
+        bonds_data.append(bonds.data_out())
+
+    return pd.DataFrame(bonds_data)
+
+
+def dataframe_to_bonds(bonds_dataframe):
+    bonds_list = []
+    for _,row in bonds_dataframe.iterrows():
+        bonds = nodes.Bond(row['node_1'], row['node_2'], row['corner_1'], row['corner_2'])
+        bonds.data_in(row)
+        bonds_list.append(bonds)
+
+    return bonds_list
+
+
+
+
+def save_project(nodes_list, facts_list, bonds_list, filename="SeraphNote_Save_New.pk1"):
     # Create save directory if it doesn't exist
     os.makedirs(os.path.dirname(filename), exist_ok=True)
 
     # Gather all data to be saved
     project_data = {
-        'nodes': nodes_to_dataframe(nodes_list)
+        'nodes': nodes_to_dataframe(nodes_list),
+        'facts': facts_to_dataframe(facts_list),
+        'bonds': bonds_to_dataframe(bonds_list)
     }
 
     # Create and save pickle file
@@ -48,7 +92,11 @@ def load_project(filename="SeraphNote_Save_New.pk1"):
     data_in = pd.read_pickle(filename)
 
     node_data = data_in['nodes']
+    fact_data = data_in['facts']
+    bond_data = data_in['bonds']
 
     nodes_list = dataframe_to_nodes(node_data)
+    fact_list = dataframe_to_facts(fact_data)
+    bond_list = dataframe_to_bonds(bond_data)
 
-    return nodes_list
+    return nodes_list, fact_list, bond_list

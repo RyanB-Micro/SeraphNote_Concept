@@ -51,6 +51,22 @@ def gen_bond_id():
     return bond_id
 
 
+def gen_source_id():
+    global fact_ids
+    fact_id = "F_0"
+    while fact_id == "F_0":
+        id = random.randint(0,255)
+        builder = "F_" + str(id)
+        # make sure it doesnt already exist
+        if builder not in fact_ids:
+            fact_id = builder
+            fact_ids.append(fact_id)
+
+    return fact_id
+
+
+def relink_object_from_id():
+    pass
 
 class Bond:
     def __init__(self, node_1, node_2, corner_1, corner_2):
@@ -78,6 +94,32 @@ class Bond:
 
     def set_text(self, text):
         self.text = text
+
+    def data_out(self):
+        # All data from node formatted for saving
+        data = {
+            'id': self.id,
+            'x': self.x,
+            'y': self.y,
+            'node_1': self.node_1,
+            'node_2': self.node_2,
+            'text': self.text,
+            'corner_1': self.corner_1,
+            'corner_2': self.corner_2
+        }
+
+        return data
+
+    def data_in(self, data):
+        # All data from node formatted for loading
+        self.id = data['id']
+        self.x = data['x']
+        self.y = data['y']
+        self.node_1 = data['node_1']
+        self.node_2 = data['node_2']
+        self.text = data['text']
+        self.corner_1 = data['corner_1']
+        self.corner_2 = data['corner_2']
 
 
 
@@ -174,3 +216,97 @@ class Fact:
 
     def set_text(self, text):
         self.text = text
+
+    def data_out(self):
+        # All data from node formatted for saving
+        data = {
+            'id': self.id,
+            'x': self.x,
+            'y': self.y,
+            'title': self.title,
+            'text': self.text,
+            'width': self.width,
+            'height': self.height,
+            'colour': self.colour,
+            'bonds': self.bonds
+        }
+
+        return data
+
+    def data_in(self, data):
+        # All data from node formatted for loading
+        self.id = data['id']
+        self.x = data['x']
+        self.y = data['y']
+        self.title = data['title']
+        self.text = data['text']
+        self.width = data['width']
+        self.height = data['height']
+        self.colour = data['colour']
+        self.bonds = data['bonds']
+
+
+
+
+class Source:
+    def __init__(self, x, y, colour, text):
+        self.x = x
+        self.y = y
+        self.text = text
+        self.colour = colour
+
+        self.width = 150
+        self.height = 150
+        self.bonds = []
+        self.box = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.id = gen_source_id()
+
+        self.corners = [(self.x,self.y), (self.x+self.width,self.y), (self.x, self.y+(self.height/2)),
+                        (self.x+self.width, self.y+(self.height/2)), (self.x, self.y+self.height), (self.x+self.width, self.y+self.height)]
+
+        self.active = False
+
+        self.bonds = [None, None, None, None, None, None]
+
+
+    def set_position(self, x, y):
+        self.x = x
+        self.y = y
+        self.box.topleft = (x, y)
+        self.corners = [(self.x, self.y), (self.x + self.width, self.y), (self.x, self.y + (self.height / 2)),
+                        (self.x + self.width, self.y + (self.height / 2)), (self.x, self.y + self.height),
+                        (self.x + self.width, self.y + self.height)]
+
+    def set_text(self, text):
+        self.text = text
+
+    def data_out(self):
+        # All data from node formatted for saving
+        data = {
+            'id': self.id,
+            'x': self.x,
+            'y': self.y,
+            'title': self.title,
+            'text': self.text,
+            'width': self.width,
+            'height': self.height,
+            'colour': self.colour,
+            'bonds': self.bonds
+        }
+
+        return data
+
+    def data_in(self, data):
+        # All data from node formatted for loading
+        self.id = data['id']
+        self.x = data['x']
+        self.y = data['y']
+        self.title = data['title']
+        self.text = data['text']
+        self.width = data['width']
+        self.height = data['height']
+        self.colour = data['colour']
+        self.bonds = data['bonds']
+
+
+
