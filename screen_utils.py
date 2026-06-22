@@ -2,6 +2,8 @@ import pygame
 import nodes as nodes
 import pandas as pd
 
+from nodes import Node
+
 WIDTH = 1490
 HEIGHT = 914
 
@@ -35,21 +37,37 @@ MID_YELLOW = (255, 194, 49)
 LIGHT_YELLOW = (255, 255, 149)
 POINT_BLUE = (81, 181, 255)
 VISION_AZURE = (7+(9+1+4), 7*(9+1+4), 7*(9+1+4))
+CYAN_SIXES = (36, 216, 216)
+MINT_135 = (81, 216, 135)
+MINT_128 = (81, 216, 128)
+MINT_2x128 = (7, 128, 128)
+MINT_64 = (64, 128, 128)
+GREEN_64 = (64, 64, 128)
+BLUE_216 = (7, 128, 216)
+BLUE_128 = (7, 64, 128)
+BLUE_82 = (7, 82, 128)
+
 
 
 node_list = []
 fact_list = []
+source_list = []
+quote_list = []
 bond_list = []
 tools_list = []
-tool_choices = [("New Node", SERAPH), ("New Fact", VISION_AZURE), ("New Source", DARK_AZURE), ("New Quote", CHILL_GREY)]
+#tool_choices = [("New Node", SERAPH), ("New Fact", VISION_AZURE), ("New Quote", DARK_AZURE), ("New Source", CHILL_GREY)]
+tool_choices = [("New_Node", SERAPH), ("New_Fact", VISION_AZURE), ("New_Quote", BLUE_82), ("New_Source", MINT_2x128)]
 draggable_node = None
 draggable_fact = None
+draggable_source = None
 build_line = False
 initial_corner = None
 terminate_corner = None
 changeable_node = None
 changeable_bond = None
 changeable_fact = None
+changeable_source = None
+changeable_quote = None
 selected_tool = None
 cursor_colour = VISION_AZURE
 
@@ -83,7 +101,7 @@ def draw_nodes():
         else:
             pygame.draw.rect(screen, node.colour, node.box)
 
-        label_text = font.render(node.text, True, (255, 255, 255))
+        label_text = font.render(node.title, True, (255, 255, 255))
         label_rect = label_text.get_rect()
         label_rect.center = (
                                 node.x + (node.width / 2),
@@ -103,6 +121,46 @@ def draw_nodes():
             pygame.draw.circle(screen, DARK_AZURE, corner, 5)
 
 
+def draw_text_wrapped(node_item, raw_text, preface, font, division, max_width):
+
+    full_text = " " + preface + raw_text
+    words = full_text.split()
+    lines = []
+    #text = ""
+
+    line_buffer = ""
+
+    for word in words:
+        # see if the line is too long
+        if font.size(line_buffer + word)[0] <= max_width:
+            line_buffer = line_buffer + word + " "
+        else:
+            for char in word:
+                if font.size(line_buffer + char)[0] <= max_width:
+                    line_buffer += char
+                else:
+                    lines.append(line_buffer)
+                    line_buffer = " -" + char
+
+
+    # if any words left over
+    if line_buffer:
+        lines.append(line_buffer)
+
+    y_offset = (node_item.height / 7) * division
+
+    for i, line in enumerate(lines):
+
+        text_rendered = font.render(line, True, (255, 255, 255))
+        text_rect = text_rendered.get_rect()
+        text_rect.midtop = (
+            node_item.x + (node_item.width / 2),
+            node_item.y + y_offset + (i * font.get_height())
+        )
+        screen.blit(text_rendered, text_rect)
+
+
+
 def draw_facts():
     global fact_list
 
@@ -114,6 +172,8 @@ def draw_facts():
         else:
             pygame.draw.rect(screen, fact.colour, fact.box, border_radius=7)
 
+        pygame.draw.rect(screen, BACK_AZURE, fact.collapse_switch, border_radius=2)
+
         label_text = font.render(fact.title, True, (255, 255, 255))
         label_rect = label_text.get_rect()
         label_rect.center = (
@@ -122,13 +182,17 @@ def draw_facts():
                             )
         screen.blit(label_text, label_rect)
 
-        body_text = font_small.render(fact.text, True, (255, 255, 255))
-        body_rect = body_text.get_rect()
-        body_rect.center = (
-            fact.x + (fact.width / 2),
-            fact.y + ((fact.height / 7) * 2)
-        )
-        screen.blit(body_text, body_rect)
+        if fact.collapsed == False:
+            #body_text = font_small.render(fact.text, True, (255, 255, 255))
+            # body_rect = body_text.get_rect()
+            # body_rect.midtop = (
+            #     fact.x + (fact.width / 2),
+            #     fact.y + ((fact.height / 7) * 2)
+            # )
+            #screen.blit(body_text, body_rect)
+            draw_text_wrapped(fact, fact.text, "", font_small, 2, fact.width-10)
+
+
 
 
         id_text = font_small.render(fact.id, True, (255, 255, 255))
@@ -141,6 +205,54 @@ def draw_facts():
 
         for corner in fact.corners:
             pygame.draw.circle(screen, DARK_AZURE, corner, 5)
+
+
+
+
+
+
+def draw_text(node_item, text, preface, font, division):
+    text = font.render(preface + text, True, (255, 255, 255))
+    text_rect = text.get_rect()
+    text_rect.center = (
+        node_item.x + (node_item.width / 2),
+        node_item.y + ((node_item.height / 7) * division)
+    )
+    screen.blit(text, text_rect)
+
+
+
+def draw_sources():
+    global source_list_
+
+    for num, source in enumerate(source_list):
+        #pygame.draw.rect(screen, node.colour, (node.x, node.y, node.width, node.height))
+
+        if num == changeable_source:
+            pygame.draw.rect(screen, DARK_GREY, source.box, border_radius=7)
+        else:
+            pygame.draw.rect(screen, source.colour, source.box, border_radius=7)
+
+        pygame.draw.rect(screen, BACK_AZURE, source.collapse_switch, border_radius=2)
+
+
+        # Draw title text
+        draw_text(source, source.title, "", font, 1)
+
+        if source.collapsed == False:
+            # Section text
+            draw_text_wrapped(source, source.section, "Section: ", font_small, 2, source.width-10)
+
+            # Chapter text
+            draw_text_wrapped(source, source.chapter, "Chapter: ", font_small, 4, source.width-10)
+
+        # ID text
+        draw_text(source, source.id, "", font_small, 6)
+
+
+        for corner in source.corners:
+            pygame.draw.circle(screen, DARK_AZURE, corner, 5)
+
 
 
 
@@ -261,13 +373,21 @@ def create_toolstrip():
         tools_list.append(tool_buffer)
 
 
-
 def draw_toolstrip():
-    tool_strip_colour = SKY_AZURE#COOL_AZURE
-    if selected_tool == 0:
-        tool_strip_colour = SERAPH
-    if selected_tool == 1:
-        tool_strip_colour = VISION_AZURE
+    #tool_strip_colour = SKY_AZURE#COOL_AZURE
+    # if selected_tool == 0:
+    #     tool_strip_colour = SERAPH
+    # if selected_tool == 1:
+    #     tool_strip_colour = VISION_AZURE
+    # if selected_tool == 2:
+    #     tool_strip_colour = DARK_AZURE
+    # if selected_tool == 3:
+    #     tool_strip_colour = CHILL_GREY
+    if selected_tool != None:
+        tool_strip_colour = tool_choices[selected_tool][1]
+    else:
+        tool_strip_colour = SKY_AZURE
+
     pygame.draw.rect(screen, tool_strip_colour, (0, HEIGHT - tool_strip_width - 10, WIDTH, HEIGHT))
 
 
@@ -323,7 +443,8 @@ def delete_bond(bond):
 def screen_loop():
     global clock, font, screen, pygame_running, draggable_node, build_line,\
         initial_corner, terminate_corner, changeable_node, changeable_bond, \
-        selected_tool, cursor_colour, draggable_fact, changeable_fact
+        selected_tool, cursor_colour, draggable_fact, changeable_fact, \
+        changeable_source
 
     #create_node()
     #create_toolstrip()
@@ -340,6 +461,7 @@ def screen_loop():
         # Draw Nodes
         draw_nodes()
         draw_facts()
+        draw_sources()
         draw_bonds()
         pygame.display.set_caption(window_title)
 
@@ -355,9 +477,12 @@ def screen_loop():
             # Check mouse
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1: # left mouse button
-                    # check if mouse over box
+
+
+                    # check if mouse over node
                     for num, node in enumerate(node_list):
-                        # check if box selected
+
+                        # check if nodebox selected
                         if node.box.collidepoint(event.pos):
                             changeable_node = num
                         # check if circle selected
@@ -381,6 +506,10 @@ def screen_loop():
                         # check if box selected
                         if fact.box.collidepoint(event.pos):
                             changeable_fact = num
+                        # check if collapse switch pressed
+                        if fact.collapse_switch.collidepoint(event.pos):
+                            fact.switch_size()
+                            changeable_fact = None # Remove miss click
                         # check if circle selected
                         for i, corner in enumerate(fact.corners):
                             # if within radius of the circle
@@ -391,6 +520,29 @@ def screen_loop():
                                 else: # finish making line
                                     build_line = False
                                     terminate_corner = (fact, i)
+
+
+                    # check if over source
+                    for num, source in enumerate(source_list):
+                        # check if box selected
+                        if source.box.collidepoint(event.pos):
+                            changeable_source = num
+                        # check if collapse switch pressed
+                        if source.collapse_switch.collidepoint(event.pos):
+                            source.switch_size()
+                            changeable_source = None  # Remove miss click
+                        # check if circle selected
+                        for i, corner in enumerate(source.corners):
+                            # if within radius of the circle
+                            if ((event.pos[0] - corner[0]) ** 2 + (
+                                    event.pos[1] - corner[1]) ** 2) <= 25:
+                                if build_line == False:  # Start making line
+                                    build_line = True
+                                    initial_corner = (source, i)
+                                else:  # finish making line
+                                    build_line = False
+                                    terminate_corner = (source, i)
+
 
                     # check if over toolstrip icon
                     for num, tool in enumerate(tools_list):
@@ -403,25 +555,39 @@ def screen_loop():
 
 
                 if event.button == 3: # right mouse button
-                    # check if mouse over box
+                    # check if mouse over node box
                     for num, node in enumerate(node_list):
                         # check if box selected
                         if node.box.collidepoint(event.pos):
                             draggable_node = node
 
-                    # check if mouse over box
+                    # check if mouse over fact box
                     for num, fact in enumerate(fact_list):
                         # check if box selected
                         if fact.box.collidepoint(event.pos):
                             draggable_node = fact
 
+                    # check if mouse over fact box
+                    for num, source in enumerate(source_list):
+                        # check if box selected
+                        if source.box.collidepoint(event.pos):
+                            draggable_node = source
+
                     if selected_tool != None:
                         if selected_tool == 0:
-                            node_list.append(nodes.Node(event.pos[0], event.pos[1], SERAPH, "New_Node"))
+                            node_list.append(nodes.Node(event.pos[0], event.pos[1], tool_choices[0][1], tool_choices[0][0]))
                             selected_tool = None
                         if selected_tool == 1:
-                            fact_list.append(nodes.Fact(event.pos[0], event.pos[1], VISION_AZURE, "New_Fact"))
+                            fact_list.append(nodes.Fact(event.pos[0], event.pos[1], tool_choices[1][1], tool_choices[1][0]))
                             selected_tool = None
+                        # if selected_tool == 2:
+                        #     quote_list.append(nodes.Fact(event.pos[0], event.pos[1], tool_choices[0][1], tool_choices[0][0]))
+                        #     selected_tool = None
+                        if selected_tool == 3:
+                            source_list.append(nodes.Source(event.pos[0], event.pos[1], tool_choices[3][1], tool_choices[3][0]))
+                            selected_tool = None
+
+
 
                     if build_line == True:
                         build_line = False
@@ -444,6 +610,8 @@ def screen_loop():
                     draggable_node.set_position(event.pos[0], event.pos[1])
                 if draggable_fact != None:
                     draggable_fact.set_position(event.pos[0], event.pos[1])
+                if draggable_source != None:
+                    draggable_source.set_position(event.pos[0], event.pos[1])
                 if build_line:
                     line_builder(initial_corner, event.pos[0], event.pos[1])
                 if terminate_corner:

@@ -20,11 +20,14 @@ root_window = None
 node_window = None
 bond_window = None
 fact_window = None
+source_window = None
 title_label_entry = None
 node_label_entry = None
 bond_label_entry = None
 fact_label_entry = None
 fact_body_text = None
+source_chapter_entry = None
+source_section_entry = None
 
 project_name = "SeraphNote__New_File__.pk1"
 
@@ -78,8 +81,8 @@ def change_node_text():
     if screen_ut.changeable_node is None:
         return
 
-    text = node_label_entry.get()
-    screen_ut.node_list[screen_ut.changeable_node].text = text
+    title = node_label_entry.get()
+    screen_ut.node_list[screen_ut.changeable_node].title = title
     screen_ut.changeable_node = None
     node_window.withdraw()
 
@@ -94,6 +97,21 @@ def change_fact_text():
     screen_ut.fact_list[screen_ut.changeable_fact].text = body
     screen_ut.changeable_fact = None
     fact_window.withdraw()
+
+
+def change_source_text():
+    if screen_ut.changeable_source is None:
+        return
+
+    title = source_label_entry.get()
+    chapter = source_chapter_entry.get()
+    section = source_section_entry.get()
+
+    screen_ut.source_list[screen_ut.changeable_source].title = title
+    screen_ut.source_list[screen_ut.changeable_source].chapter = chapter
+    screen_ut.source_list[screen_ut.changeable_source].section = section
+    screen_ut.changeable_source = None
+    source_window.withdraw()
 
 
 def change_bond_text():
@@ -133,6 +151,20 @@ def delete_fact():
     fact_window.withdraw()
 
 
+
+def delete_source():
+    if screen_ut.changeable_source is None:
+        return
+
+    deleting_source = screen_ut.source_list[screen_ut.changeable_source]
+
+    screen_ut.delete_item(deleting_source, screen_ut.source_list)
+    screen_ut.changeable_source = None
+
+    # Hide window
+    source_window.withdraw()
+
+
 def delete_bond():
     if screen_ut.changeable_bond is None:
         return
@@ -160,6 +192,11 @@ def cancel_fact_edit():
     fact_window.withdraw()
 
 
+def cancel_source_edit():
+    screen_ut.changeable_source = None
+    source_window.withdraw()
+
+
 # def save_project():
 #     change_title_text()
 #     # if not project_name:
@@ -173,14 +210,14 @@ def save_project():
     change_title_text()
 
     # create directory if doest exist
-    os.makedirs("SeraphNote_Saves/", exist_ok=True)
+    os.makedirs("SeraphNote_Saves\\", exist_ok=True)
 
     # Ensure a name wass entered
     if len(project_name) < 1:
         project_name = "SeraphNote__New_File__.pk1"
 
     # Open file location window to save project
-    file = filedialog.asksaveasfilename(initialfile=project_name, initialdir="SeraphNote_Saves/", defaultextension=".pk1", filetypes=[("Project File", ".pk1")])
+    file = filedialog.asksaveasfilename(initialfile=project_name, initialdir="SeraphNote_Saves\\", defaultextension=".pk1", filetypes=[("Project File", ".pk1")])
     save_location = file
 
     # call pickle save function
@@ -284,20 +321,54 @@ def create_fact_control():
     fact_label_entry.pack()
 
     Label(fact_window, text="Fact Text").pack(anchor="w", pady=(7, 0))
-    fact_body_text = Text(fact_window,height=30, width=30)
+    fact_body_text = Text(fact_window,height=4, width=30)
     fact_body_text.pack()
 
     update_label_button = Button(fact_window, text="Update Fact")
     update_label_button.config(command=lambda: change_fact_text())
-    update_label_button.place(x=50, y=160)
+    update_label_button.place(x=50, y=170)
 
     cancel_label_button = Button(fact_window, text="Cancel")
     cancel_label_button.config(command=lambda: cancel_fact_edit())
-    cancel_label_button.place(x=60, y=190)
+    cancel_label_button.place(x=60, y=200)
 
     delete_fact_button = Button(fact_window, text="Delete Fact")
     delete_fact_button.config(command=lambda: delete_fact())
     delete_fact_button.place(x=50, y=250)
+
+
+def create_source_control():
+    global source_label_entry, source_chapter_entry, source_section_entry
+    source_window.geometry("200x300")
+    source_window.protocol("WM_DELETE_WINDOW", cancel_source_edit)
+    source_window.title("Source Control")
+
+    title_label = Label(source_window, text="Source Control Panel")
+    title_label.pack()
+
+    Label(source_window, text="Source Name").pack(anchor="w", pady=(7, 0))
+    source_label_entry = Entry(source_window, width=30)
+    source_label_entry.pack()
+
+    Label(source_window, text="Chapter:").pack(anchor="w", pady=(7, 0))
+    source_chapter_entry = Entry(source_window, width=30)
+    source_chapter_entry.pack()
+
+    Label(source_window, text="Section:").pack(anchor="w", pady=(7, 0))
+    source_section_entry = Entry(source_window, width=30)
+    source_section_entry.pack()
+
+    update_label_button = Button(source_window, text="Update Fact")
+    update_label_button.config(command=lambda: change_source_text())
+    update_label_button.place(x=50, y=170)
+
+    cancel_label_button = Button(source_window, text="Cancel")
+    cancel_label_button.config(command=lambda: cancel_source_edit())
+    cancel_label_button.place(x=60, y=200)
+
+    delete_source_button = Button(source_window, text="Delete Fact")
+    delete_source_button.config(command=lambda: delete_source())
+    delete_source_button.place(x=50, y=250)
 
 
 def create_bond_control():
@@ -331,7 +402,7 @@ def detect_node_selection():
     if screen_ut.pygame_running and (screen_ut.changeable_node is not None):
         if node_window.state() == "withdrawn":
             node_label_entry.delete(0, END)
-            node_label_entry.insert(0, screen_ut.node_list[screen_ut.changeable_node].text)
+            node_label_entry.insert(0, screen_ut.node_list[screen_ut.changeable_node].title)
             node_window.deiconify()
     # recheck window after delay
     node_window.after(100, detect_node_selection)
@@ -342,10 +413,25 @@ def detect_fact_selection():
     if screen_ut.pygame_running and (screen_ut.changeable_fact is not None):
         if fact_window.state() == "withdrawn":
             fact_label_entry.delete(0, END)
-            fact_label_entry.insert(0, screen_ut.fact_list[screen_ut.changeable_fact].text)
+            fact_label_entry.insert(0, screen_ut.fact_list[screen_ut.changeable_fact].title)
             fact_window.deiconify()
     # recheck window after delay
     fact_window.after(100, detect_fact_selection)
+
+
+def detect_source_selection():
+    global source_label_entry, source_body_entry
+    if screen_ut.pygame_running and (screen_ut.changeable_source is not None):
+        if source_window.state() == "withdrawn":
+            source_label_entry.delete(0, END)
+            source_label_entry.insert(0, screen_ut.source_list[screen_ut.changeable_source].title)
+            source_chapter_entry.delete(0, END)
+            source_chapter_entry.insert(0, screen_ut.source_list[screen_ut.changeable_source].chapter)
+            source_section_entry.delete(0, END)
+            source_section_entry.insert(0, screen_ut.source_list[screen_ut.changeable_source].section)
+            source_window.deiconify()
+    # recheck window after delay
+    source_window.after(100, detect_source_selection)
 
 
 def detect_bond_selection():
@@ -353,7 +439,7 @@ def detect_bond_selection():
     if screen_ut.pygame_running and (screen_ut.changeable_bond is not None):
         if bond_window.state() == "withdrawn":
             bond_label_entry.delete(0, END)
-            bond_label_entry.insert(0, screen_ut.bond_list[screen_ut.changeable_bond].text)
+            bond_label_entry.insert(0, screen_ut.bond_list[screen_ut.changeable_bond].title)
             bond_window.deiconify()
     # recheck window after delay
     bond_window.after(100, detect_bond_selection)
@@ -362,12 +448,13 @@ def detect_bond_selection():
 
 
 def main():
-    global root_window, node_window, bond_window, fact_window
+    global root_window, node_window, bond_window, fact_window,source_window
     print ("Program Running")
     root_window = Tk()
     node_window = Toplevel(root_window)
     bond_window = Toplevel(root_window)
     fact_window = Toplevel(root_window)
+    source_window = Toplevel(root_window)
 
     screen_ut.WIDTH = WIDTH
     screen_ut.HEIGHT = HEIGHT
@@ -377,14 +464,17 @@ def main():
     create_node_control()
     create_bond_control()
     create_fact_control()
+    create_source_control()
 
     node_window.withdraw()
     bond_window.withdraw()
     fact_window.withdraw()
+    source_window.withdraw()
 
     detect_node_selection()
     detect_bond_selection()
     detect_fact_selection()
+    detect_source_selection()
 
     root_window.mainloop()
 
@@ -402,4 +492,4 @@ screen_thread = threading.Thread(target=screen_loop)
 if __name__ == '__main__':
     main()
 
-# "For God so loved the world, that he gave his one and only Son, so that whoever believes in him should not perish, but get to live an everlasting life - John 3:16"
+# † "For God so loved the world, that he gave his one and only Son, so that whoever believes in him should not perish, but get to live an everlasting life - John 3:16" †

@@ -21,7 +21,7 @@ def nodes_to_dataframe(node_list):
 def dataframe_to_nodes(node_dataframe):
     node_list = []
     for _,row in node_dataframe.iterrows():
-        node = nodes.Node(row['x'], row['y'], row['colour'], row['text'])
+        node = nodes.Node(row['x'], row['y'], row['colour'], row['title'])
         node.data_in(row)
         node_list.append(node)
 
@@ -41,7 +41,7 @@ def facts_to_dataframe(facts_list):
 def dataframe_to_facts(facts_dataframe):
     facts_list = []
     for _,row in facts_dataframe.iterrows():
-        facts = nodes.Fact(row['x'], row['y'], row['colour'], row['text'])
+        facts = nodes.Fact(row['x'], row['y'], row['colour'], row['title'])
         facts.data_in(row)
         facts_list.append(facts)
 
